@@ -1,0 +1,2 @@
+({S, A}; {a, b}; S; {S>a|b|AA, A>b})
+({S, B, B1}; {a, b}; S; {S>b|aBB|B|BB1|BBB, B>baba, B1>a})
