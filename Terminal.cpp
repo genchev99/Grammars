@@ -20,7 +20,8 @@ std::string Terminal::getValue() {
 
 void Terminal::addIndex(long id) {}
 
-Terminal::~Terminal() {
-
+void Terminal::Destroy() {
+  delete(this);
 }
-/* Noting happens */
+
+//Terminal::~Terminal() = default;

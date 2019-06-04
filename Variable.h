@@ -33,7 +33,8 @@ public:
   bool operator<=(const Variable &rhs) const;
   bool operator>=(const Variable &rhs) const;
 
-  ~Variable();
+  virtual void Destroy() = 0;
+//  ~Variable();
 };
 
 

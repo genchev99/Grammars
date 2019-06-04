@@ -52,7 +52,7 @@ Grammar::Grammar(long id, std::string grammar) {
       exit(1);
     }
     for (const auto &item : splitRight) {
-      _rules.push_back(Rule(++_nextRuleId, splitRule.at(0), item));
+      _rules.push_back(new Rule(++_nextRuleId, splitRule.at(0), item));
     }
   }
 }
@@ -60,11 +60,13 @@ Grammar::Grammar(long id, std::string grammar) {
 Grammar::Grammar(const Grammar &other) {
 //  std::cout << "Grammar copy constructor" << std::endl;
   _id = other._id;
-  _nextRuleId = other._nextRuleId;
+  _nextRuleId =  0;
   _nonTerminals = other._nonTerminals;
   _terminals = other._terminals;
   _start = other._start;
-  _rules = other._rules;
+  for (auto rule : other._rules) {
+    this->addRule(rule->getLeftValue(), rule->getRightValue());
+  }
 }
 
 template <typename T>
@@ -89,7 +91,7 @@ void Grammar::print() {
   printSet<NonTerminal>(_nonTerminals);
   std::cout << "[ * ] Rules: " << std::endl;
   for (auto &rule : _rules) {
-    rule.print();
+    rule->print();
   }
   std::cout << std::endl;
 }
@@ -110,10 +112,10 @@ Grammar Grammar::operator+(const Grammar &other) {
   result._terminals.insert(result._terminals.end(), otherCopy._terminals.begin(), otherCopy._terminals.end());
 
   for (auto &rule : thisCopy._rules) {
-    result.addRule(rule.getLeftValue(), rule.getRightValue()); /* TODO add method with split rule */
+    result.addRule(rule->getLeftValue(), rule->getRightValue()); /* TODO add method with split rule */
   }
   for (auto &rule : otherCopy._rules) {
-    result.addRule(rule.getLeftValue(), rule.getRightValue()); /* TODO add method with split rule */
+    result.addRule(rule->getLeftValue(), rule->getRightValue()); /* TODO add method with split rule */
   }
 
   sort( result._terminals.begin(), result._terminals.end() );
@@ -145,10 +147,10 @@ Grammar Grammar::operator*(const Grammar &other) {
   result._terminals.insert(result._terminals.end(), otherCopy._terminals.begin(), otherCopy._terminals.end());
 
   for (auto &rule : thisCopy._rules) {
-    result.addRule(rule.getLeftValue(), rule.getRightValue()); /* TODO add method with split rule */
+    result.addRule(rule->getLeftValue(), rule->getRightValue()); /* TODO add method with split rule */
   }
   for (auto &rule : otherCopy._rules) {
-    result.addRule(rule.getLeftValue(), rule.getRightValue()); /* TODO add method with split rule */
+    result.addRule(rule->getLeftValue(), rule->getRightValue()); /* TODO add method with split rule */
   }
 
   sort( result._terminals.begin(), result._terminals.end() );
@@ -170,7 +172,7 @@ void Grammar::modify(long id) {
     nonTerminal.addIndex(id);
   }
   for (auto &rule : _rules) {
-    rule.modify(id);
+    rule->modify(id);
   }
 }
 
@@ -206,12 +208,15 @@ void Grammar::set_start(const NonTerminal &_start) {
   Grammar::_start = _start;
 }
 
-const std::vector<Rule> &Grammar::get_rules() const {
+const std::vector<Rule *> &Grammar::get_rules() const {
   return _rules;
 }
 
-void Grammar::set_rules(const std::vector<Rule> &_rules) {
-  Grammar::_rules = _rules;
+void Grammar::set_rules(const std::vector<Rule> &rules) {
+  for (auto &rule : rules) {
+    _rules.push_back(new Rule(rule));
+  }
+//  Grammar::_rules = _rules;
 }
 
 long Grammar::get_nextRuleId() {
@@ -228,29 +233,33 @@ void Grammar::addRule(std::string rule) {
     std::cerr << "Invalid rule" << std::endl;
     exit(1);
   }
-  _rules.push_back(Rule(++_nextRuleId, sets.at(0), sets.at(1)));
+  _rules.push_back(new Rule(++_nextRuleId, sets.at(0), sets.at(1)));
 }
 
 void Grammar::removeRule(long id) {
   for (auto it = _rules.begin();  it != _rules.end() ; it++) {
-    if (it->get_id() == id) {
+    if ((*it)->get_id() == id) {
+//      delete (*it);
+      (*it)->Destroy();
       _rules.erase(it);
     }
   }
 }
 
 void Grammar::addRule(std::string left, std::string right) {
-  _rules.push_back(Rule(++_nextRuleId, left, right));
+  Rule *rule = new Rule(++_nextRuleId, std::move(left), std::move(right));
+  _rules.push_back(rule);
+//  rule->Destroy();
 }
 
 void Grammar::addRule(const Rule &rule) {
-  _rules.push_back(Rule(rule));
+  _rules.emplace_back(new Rule(rule));
 }
 
 bool Grammar::chomsky() {
   for (auto &rule : _rules) {
     /* Check for non chomsky rules */
-    if (!rule.isChomsky()) return false;
+    if (!rule->isChomsky()) return false;
   }
 
   return true;
@@ -301,6 +310,7 @@ std::string joinNonTerminals(std::pair<NonTerminal, NonTerminal> combination) {
 
 bool Grammar::cyk(std::string word) {
   if (!chomsky() || word.empty()) {
+    std::cerr << "Grammar error" << std::endl;
     return false;
   }
 
@@ -325,15 +335,32 @@ bool Grammar::cyk(std::string word) {
           if (!isPair(pairs, currentSubString)) pairs.push_back(std::make_pair(currentSubString, matches));
         }
       }
-      for (auto &pair : pairs) {
+      /*for (auto &pair : pairs) {
+        std::cout << pair.first;
         if (pair.first == word) {
           for (auto &term : pair.second) {
+            std::cout << term.getValue();
             if (term.getValue() == _start.getValue()) return true;
           }
         }
-      }
+      }*/
+
+
     }
   }
+
+  for (auto &pair : pairs) {
+    std::cout << "word: " << pair.first;
+    std::cout << word << std::endl;
+    if (pair.first == word) {
+      for (auto &term : pair.second) {
+        std::cout << " value: " << term.getValue();
+        if (term.getValue() == _start.getValue()) return true;
+      }
+    }
+    std::cout << std::endl;
+  }
+
 
   return false;
 }
@@ -342,8 +369,8 @@ std::vector<NonTerminal> Grammar::getNonTerminalsFromImplication(std::string wor
   std::vector<NonTerminal> nonTerminals;
 
   for (auto &rule : _rules) {
-    if (rule.getRightValue() == word) {
-      nonTerminals.push_back(rule.getRightValue());
+    if (rule->getRightValue() == word) {
+      nonTerminals.push_back(rule->getRightValue());
     }
   }
 
@@ -368,7 +395,7 @@ char Grammar::ensureNonTerminalSymbol() {
 bool Grammar::hasOneRule(NonTerminal nonTerminal) {
   int occurrences = 0;
   for (auto &rule : _rules) {
-    if (rule.getLeftValue() == nonTerminal.getValue()) {
+    if (rule->getLeftValue() == nonTerminal.getValue()) {
       occurrences++;
     }
   }
@@ -382,9 +409,9 @@ std::vector<std::pair<Terminal, NonTerminal>> Grammar::getReverseImplication() {
   for (auto &terminal : _terminals) {
     bool found = false;
     for (auto &rule : _rules) {
-      auto ruleParts = rule.getRight();
-      if (ruleParts.size() == 1 && ruleParts.at(0)->getValue() == terminal.getValue() && hasOneRule(rule.getLeft())) {
-        result.push_back(std::make_pair(terminal, rule.getLeft()));
+      auto ruleParts = rule->getRight();
+      if (ruleParts.size() == 1 && ruleParts.at(0)->getValue() == terminal.getValue() && hasOneRule(rule->getLeft())) {
+        result.push_back(std::make_pair(terminal, rule->getLeft()));
         found = true;
       }
     }
@@ -406,17 +433,17 @@ NonTerminal getNonTerminalFromReverse(std::vector<std::pair<Terminal, NonTermina
 
 std::string getPackedNonTerminals(std::vector<Variable *> variables) {
   std::string result;
-  for (int i = 1; i < variables.size(); ++i) {
+  for (unsigned long i = 1; i < variables.size(); ++i) {
     result += variables.at(i)->getValue();
   }
 
   return result;
 }
 
-std::vector<Rule> Grammar::getRulesFrom(NonTerminal nonTerminal) {
-  std::vector<Rule> result;
+std::vector<Rule *> Grammar::getRulesFrom(NonTerminal nonTerminal) {
+  std::vector<Rule *> result;
   for (auto &rule : _rules) {
-    if (rule.getLeftValue() == nonTerminal.getValue()) {
+    if (rule->getLeftValue() == nonTerminal.getValue()) {
       result.push_back(rule);
     }
   }
@@ -425,12 +452,12 @@ std::vector<Rule> Grammar::getRulesFrom(NonTerminal nonTerminal) {
 }
 
 Grammar Grammar::chomskify() {
-  Grammar result(*this);
+//  Grammar result(*this);
   std::vector<std::pair <Terminal, NonTerminal>> linkedNonTerminals = getReverseImplication();
 
   /* First step */
-  for (auto &rule : result._rules) {
-    auto variables = rule.getRight();
+  for (auto &rule : _rules) {
+    auto variables = rule->getRight();
     for (auto &variable : variables) {
       if (variable->isTerminal() && variables.size() != 1) {
         NonTerminal nonTerminal = getNonTerminalFromReverse(linkedNonTerminals, variable->getValue());
@@ -443,15 +470,15 @@ Grammar Grammar::chomskify() {
   /* Sec step */
   int counter = 0;
   std::vector<long long> rulesToRemove;
-  unsigned long size = result._rules.size();
+  unsigned long size = _rules.size();
   char unusedChar = ensureNonTerminalSymbol();
   for (unsigned int i = 0; i < size; ++i) {
-    auto variables = result._rules.at(i).getRight();
+    auto variables = _rules.at(i)->getRight();
     if (variables.size() > 2) {
       std::string nonTerminalString = std::string(1, unusedChar) + std::to_string(++counter);
-      result.addRule(result._rules.at(i).getLeftValue(), variables.at(0)->getValue() + nonTerminalString);
-      result.addRule(nonTerminalString, getPackedNonTerminals(variables));
-      rulesToRemove.push_back(_rules.at(i).get_id());
+      this->addRule(_rules.at(i)->getLeftValue(), variables.at(0)->getValue() + nonTerminalString);
+      this->addRule(nonTerminalString, getPackedNonTerminals(variables));
+      rulesToRemove.push_back(_rules.at(i)->get_id());
       size = _rules.size();
     }
   }
@@ -461,28 +488,43 @@ Grammar Grammar::chomskify() {
   /* Step 4 remove single non Terminals */
   rulesToRemove.clear();
   for (auto &rule : _rules) {
-    auto variables = rule.getRight();
+    auto variables = rule->getRight();
     if (variables.size() == 1 && !variables.at(0)->isTerminal()) {
-      std::vector<Rule> nestedRules = getRulesFrom(variables.at(0)->getValue());
+      std::vector<Rule *> nestedRules = getRulesFrom(variables.at(0)->getValue());
       for (auto &nestedRule : nestedRules) {
-        this->addRule(rule.getLeftValue(), nestedRule.getRightValue());
-        rulesToRemove.push_back(rule.get_id());
+        this->addRule(rule->getLeftValue(), nestedRule->getRightValue());
+        rulesToRemove.push_back(rule->get_id());
       }
     }
   }
   for (auto &toRemove : rulesToRemove) { this->removeRule(toRemove); } /* Removing the nested rules */
 
 
-  return result;
+  return *this;
 }
 
 bool Grammar::ruleExists(NonTerminal left, Terminal right) {
   for (auto &rule : _rules) {
-    if (rule.getLeftValue() == left.getValue() && rule.getRightValue() == right.getValue()) {
+    if (rule->getLeftValue() == left.getValue() && rule->getRightValue() == right.getValue()) {
       return true;
     }
   }
   return false;
+}
+
+/*Grammar::~Grammar() {
+  for (auto itr : _rules) {
+    std::cout << itr << std::endl;
+    itr->Destroy();
+  }
+}*/
+
+void Grammar::Destroy() {
+  for (auto itr : _rules) {
+//    std::cout << itr << std::endl;
+    itr->Destroy();
+  }
+  delete(this);
 }
 
 

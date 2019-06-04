@@ -30,7 +30,8 @@ public:
 
   long get_id();
 
-  ~Rule();
+//  ~Rule();
+  void Destroy();
 };
 
 

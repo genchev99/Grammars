@@ -18,7 +18,7 @@ void GrammarManager::open(std::string path) {
   if (grammarFile.is_open()) {
 
     while (getline (grammarFile, line)) {
-      _grammars.push_back(Grammar(++_nextGrammarId, line));
+      _grammars.push_back(new Grammar(++_nextGrammarId, line));
     }
     grammarFile.close();
   } else {
@@ -33,7 +33,7 @@ void GrammarManager::list() {
   std::cout << "[ * ] Grammars: ";
   const unsigned long grammarsSize = _grammars.size();
   for (unsigned long i = 0; i < grammarsSize; ++i) {
-    std::cout << _grammars.at(i).get_id();
+    std::cout << _grammars.at(i)->get_id();
     if (i != grammarsSize -1) {
       std::cout << ", ";
     }
@@ -48,7 +48,7 @@ void GrammarManager::print(long id) {
 
 Grammar * GrammarManager::getGrammar(long id) {
   for (auto &grammar : _grammars) {
-    if (grammar.get_id() == id) return &grammar;
+    if (grammar->get_id() == id) return grammar;
   }
 
   return new Grammar();
@@ -63,22 +63,22 @@ void GrammarManager::removeRule(long grammar, long rule) {
 }
 
 void GrammarManager::unionGrammars(long left, long right) {
-  Grammar leftGrammar = *getGrammar(left);
-  Grammar rightGrammar = *getGrammar(right);
+  Grammar leftGrammar(*getGrammar(left));
+  Grammar rightGrammar(*getGrammar(right));
 //  Grammar unioned = leftGrammar + rightGrammar;
-  _grammars.push_back((leftGrammar + rightGrammar));
-  (_grammars.end() -1)->set_id(++_nextGrammarId); /* Nasty... */
+  _grammars.push_back(new Grammar(leftGrammar + rightGrammar));
+  (*(_grammars.end() -1))->set_id(++_nextGrammarId); /* Nasty... */
 
-  std::cout << "[ * ] New Grammar: " << (_grammars.end() -1 )->get_id() << std::endl;
+  std::cout << "[ * ] New Grammar: " << (*(_grammars.end() -1))->get_id() << std::endl;
 }
 
 void GrammarManager::concatGrammars(long left, long right) {
   Grammar leftGrammar = *getGrammar(left);
   Grammar rightGrammar = *getGrammar(right);
-  _grammars.push_back((leftGrammar * rightGrammar));
-  (_grammars.end() -1)->set_id(++_nextGrammarId); /* Nasty... */
+  _grammars.push_back(new Grammar(leftGrammar * rightGrammar));
+  (*(_grammars.end() -1))->set_id(++_nextGrammarId); /* Nasty... */
 
-  std::cout << "[ * ] New Grammar: " << (_grammars.end() -1 )->get_id() << std::endl;
+  std::cout << "[ * ] New Grammar: " << (*(_grammars.end() -1))->get_id() << std::endl;
 }
 
 void GrammarManager::chomsky(long id) {
@@ -89,15 +89,31 @@ void GrammarManager::chomsky(long id) {
 void GrammarManager::iteration(long id) {
   Grammar grammar = getGrammar(id)->iterate();
 
-  _grammars.push_back(grammar);
-  (_grammars.end() -1)->set_id(++_nextGrammarId);
-  std::cout << "[ * ] New Grammar: " << (_grammars.end() -1 )->get_id() << std::endl;
+  _grammars.push_back(new Grammar(grammar));
+  (*(_grammars.end() -1))->set_id(++_nextGrammarId);
+  std::cout << "[ * ] New Grammar: " << (*(_grammars.end() -1))->get_id() << std::endl;
 }
 
 void GrammarManager::chomskify(long id) {
-  Grammar grammar = getGrammar(id)->chomskify();
+  Grammar grammar(*getGrammar(id));
+  grammar.chomskify();
 
-  _grammars.push_back(grammar);
-  (_grammars.end() -1)->set_id(++_nextGrammarId);
-  std::cout << "[ * ] New Grammar: " << (_grammars.end() -1 )->get_id() << std::endl;
+  _grammars.push_back(new Grammar(grammar));
+  (*(_grammars.end() -1))->set_id(++_nextGrammarId);
+  std::cout << "[ * ] New Grammar: " << (*(_grammars.end() -1))->get_id() << std::endl;
+}
+
+void GrammarManager::Destroy() {
+  for (auto itr : _grammars) {
+//    std::cout << itr << std::endl;
+    itr->Destroy();
+  }
+
+  delete(this);
+}
+
+void GrammarManager::cyk(long id, std::string word) {
+  bool contains = getGrammar(id)->cyk(word);
+
+  std::cout << "The word ~ " << word << " ~ is " << (contains? "": "not") << " containing" << std::endl;
 }

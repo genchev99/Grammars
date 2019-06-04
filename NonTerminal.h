@@ -21,7 +21,8 @@ public:
 
     void addIndex(long id) override;
 
-    ~NonTerminal();
+  void Destroy() override;
+//    ~NonTerminal();
 };
 
 

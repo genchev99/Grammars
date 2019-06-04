@@ -94,8 +94,22 @@ std::vector<Variable *> Rule::getRight() {
   return _right;
 }
 
-Rule::~Rule() {
-  for (auto &right : _right) {
+//Rule::~Rule() {
+  /*for (auto *right : _right) {
     delete(right);
+  }*/
+  /*for (auto &itr : _right) {
+//    std::cout << itr << std::endl;
+    itr->Destroy();
+//    delete *itr;
+  }*/
+//}
+
+void Rule::Destroy() {
+  for (auto &itr : _right) {
+//    std::cout << itr << std::endl;
+    itr->Destroy();
+//    delete *itr;
   }
+  delete(this);
 }

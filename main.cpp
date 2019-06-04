@@ -32,27 +32,34 @@ int main() {
   for (auto &grammar : grammars) {
     grammar.print();
   }*/
-  GrammarManager  grammarManager;
-  grammarManager.open("/home/genchev99/CPP_Projects/Grammars/grams.txt");
-  grammarManager.list();
-  grammarManager.print(1);
-  grammarManager.print(2);
-  grammarManager.addRule(2, "S>aaaa");
-  grammarManager.print(2);
-  grammarManager.removeRule(2, 3);
-  grammarManager.print(2);
+  GrammarManager  *grammarManager = new GrammarManager();
+//  grammarManager.open("/home/genchev99/CPP_Projects/Grammars/grams.txt");
+  grammarManager->open("/home/bcp/CLionProjects/Grammars/grams.txt");
+  grammarManager->list();
+  grammarManager->print(1);
+  grammarManager->print(2);
+//  grammarManager->addRule(2, "S>aaaa");
+//  grammarManager->print(2);
+//  grammarManager->removeRule(2, 3);
+//  grammarManager->print(2);
 
-  grammarManager.unionGrammars(1, 2);
-  grammarManager.print(3);
+  grammarManager->unionGrammars(1, 2);
+  grammarManager->print(1);
+  grammarManager->print(2);
+  grammarManager->print(3);
 
-  grammarManager.concatGrammars(1, 2);
-  grammarManager.print(4);
+  grammarManager->concatGrammars(1, 2);
+  grammarManager->print(4);
 
-  grammarManager.iteration(1);
-  grammarManager.print(5);
+  grammarManager->iteration(1);
+  grammarManager->print(5);
 
-  grammarManager.chomskify(2);
-  grammarManager.print(6);
+  grammarManager->chomskify(2);
+  grammarManager->print(6);
+
+  grammarManager->cyk(6, "baba");
+
+  grammarManager->Destroy();
 
   return 0;
 }

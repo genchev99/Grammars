@@ -16,7 +16,7 @@ class Grammar {
   std::vector<Terminal> _terminals;
   std::vector<NonTerminal> _nonTerminals;
   NonTerminal _start;
-  std::vector<Rule> _rules;
+  std::vector<Rule *> _rules;
 
   /*  utils */
   long _nextRuleId;
@@ -38,7 +38,7 @@ public:
   char ensureNonTerminalSymbol();
   bool hasOneRule(NonTerminal nonTerminal);
   bool ruleExists(NonTerminal left, Terminal right);
-  std::vector<Rule> getRulesFrom(NonTerminal nonTerminal);
+  std::vector<Rule *> getRulesFrom(NonTerminal nonTerminal);
   std::vector<std::pair<Terminal, NonTerminal>> getReverseImplication();
 
 
@@ -56,10 +56,13 @@ public:
   void set_nonTerminals(const std::vector<NonTerminal> &_nonTerminals);
   const NonTerminal &get_start() const;
   void set_start(const NonTerminal &_start);
-  const std::vector<Rule> &get_rules() const;
+  const std::vector<Rule *> &get_rules() const;
   void set_rules(const std::vector<Rule> &_rules);
   long get_nextRuleId();
   void set_nextRuleId(long _nextRuleId);
+
+//  ~Grammar();
+  void Destroy();
 };
 
 

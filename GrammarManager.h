@@ -9,7 +9,7 @@
 #include "Grammar.h"
 
 class GrammarManager {
-  std::vector<Grammar> _grammars;
+  std::vector<Grammar *> _grammars;
   /* Utils */
   long _nextGrammarId;
 public:
@@ -25,6 +25,9 @@ public:
     void iteration(long id);
     void chomsky(long id);
     void chomskify(long id);
+    void cyk(long id, std::string word);
+
+    void Destroy();
 };
 
 

@@ -38,8 +38,10 @@ void NonTerminal::addIndex(long id) {
   _indexes.push_back(id);
 }
 
-NonTerminal::~NonTerminal() {
-
+void NonTerminal::Destroy() {
+  delete(this);
 }
+
+//NonTerminal::~NonTerminal() = default;
 
 NonTerminal::NonTerminal() = default;
