@@ -20,6 +20,8 @@ public:
   bool isTerminal();
   bool isEpsilon();
 
+  void setValue(std::string value);
+
   virtual std::string getValue() = 0;
   virtual void addIndex(long id) = 0;
 
@@ -30,6 +32,8 @@ public:
   bool operator>(const Variable &rhs) const;
   bool operator<=(const Variable &rhs) const;
   bool operator>=(const Variable &rhs) const;
+
+  ~Variable();
 };
 
 

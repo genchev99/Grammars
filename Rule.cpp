@@ -85,3 +85,17 @@ bool Rule::isChomsky() {
 
   return true;
 }
+
+NonTerminal Rule::getLeft() {
+  return _left;
+}
+
+std::vector<Variable *> Rule::getRight() {
+  return _right;
+}
+
+Rule::~Rule() {
+  for (auto &right : _right) {
+    delete(right);
+  }
+}

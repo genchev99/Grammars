@@ -47,4 +47,10 @@ bool Variable::isEpsilon() {
   return _value == "ε";
 }
 
+void Variable::setValue(std::string value) {
+  _value = std::move(value);
+}
+
+Variable::~Variable() = default;
+
 Variable::Variable() = default;

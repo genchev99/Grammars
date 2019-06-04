@@ -18,4 +18,9 @@ std::string Terminal::getValue() {
   return _value;
 }
 
-void Terminal::addIndex(long id) {} /* Noting happens */
+void Terminal::addIndex(long id) {}
+
+Terminal::~Terminal() {
+
+}
+/* Noting happens */

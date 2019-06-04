@@ -32,7 +32,7 @@ int main() {
   for (auto &grammar : grammars) {
     grammar.print();
   }*/
-  GrammarManager grammarManager;
+  GrammarManager  grammarManager;
   grammarManager.open("/home/genchev99/CPP_Projects/Grammars/grams.txt");
   grammarManager.list();
   grammarManager.print(1);
@@ -47,6 +47,12 @@ int main() {
 
   grammarManager.concatGrammars(1, 2);
   grammarManager.print(4);
+
+  grammarManager.iteration(1);
+  grammarManager.print(5);
+
+  grammarManager.chomskify(2);
+  grammarManager.print(6);
 
   return 0;
 }

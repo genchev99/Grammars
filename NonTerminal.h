@@ -20,6 +20,8 @@ public:
     std::string getIndexAsString();
 
     void addIndex(long id) override;
+
+    ~NonTerminal();
 };
 
 

@@ -24,6 +24,7 @@ public:
     void concatGrammars(long left, long right);
     void iteration(long id);
     void chomsky(long id);
+    void chomskify(long id);
 };
 
 

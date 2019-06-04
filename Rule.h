@@ -20,12 +20,17 @@ public:
   std::string getLeftValue();
   std::string getRightValue();
 
+  NonTerminal getLeft();
+  std::vector<Variable *> getRight();
+
   void print();
   void modify(long id);
 
   bool isChomsky();
 
   long get_id();
+
+  ~Rule();
 };
 
 

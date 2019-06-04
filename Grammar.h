@@ -35,9 +35,18 @@ public:
   void addRule(std::string left, std::string right);
   void removeRule(long id);
 
-  Grammar iterate();
-  bool chomsky();
+  char ensureNonTerminalSymbol();
+  bool hasOneRule(NonTerminal nonTerminal);
+  bool ruleExists(NonTerminal left, Terminal right);
+  std::vector<Rule> getRulesFrom(NonTerminal nonTerminal);
+  std::vector<std::pair<Terminal, NonTerminal>> getReverseImplication();
 
+
+  Grammar iterate();
+  Grammar chomskify();
+  bool chomsky();
+  bool cyk(std::string word);
+  std::vector<NonTerminal> getNonTerminalsFromImplication(std::string word);
   /* Getters and setters */
   long get_id() const;
   void set_id(long _id);

@@ -17,6 +17,8 @@ public:
 
     std::string getValue() override;
     void addIndex(long id) override;
+
+    ~Terminal();
 };
 
 

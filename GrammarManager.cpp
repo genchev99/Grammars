@@ -87,5 +87,17 @@ void GrammarManager::chomsky(long id) {
 }
 
 void GrammarManager::iteration(long id) {
-  Grammar grammar = getGrammar(id)->;
+  Grammar grammar = getGrammar(id)->iterate();
+
+  _grammars.push_back(grammar);
+  (_grammars.end() -1)->set_id(++_nextGrammarId);
+  std::cout << "[ * ] New Grammar: " << (_grammars.end() -1 )->get_id() << std::endl;
+}
+
+void GrammarManager::chomskify(long id) {
+  Grammar grammar = getGrammar(id)->chomskify();
+
+  _grammars.push_back(grammar);
+  (_grammars.end() -1)->set_id(++_nextGrammarId);
+  std::cout << "[ * ] New Grammar: " << (_grammars.end() -1 )->get_id() << std::endl;
 }
