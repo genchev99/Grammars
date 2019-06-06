@@ -98,69 +98,77 @@ void Grammar::print() {
 
 /* Union */
 Grammar Grammar::operator+(const Grammar &other) {
-  Grammar thisCopy(*this);
-  Grammar otherCopy(other);
+  Grammar *thisCopy = new Grammar(*this);
+  Grammar *otherCopy = new Grammar(other);
+//  Grammar *result = new Grammar();
   Grammar result;
 
-  thisCopy.modify(thisCopy._id);
-  otherCopy.modify(otherCopy._id);
+  thisCopy->modify(thisCopy->_id);
+  otherCopy->modify(otherCopy->_id);
 
-  result._nonTerminals = thisCopy._nonTerminals;
-  result._nonTerminals.insert(result._nonTerminals.end(), otherCopy._nonTerminals.begin(), otherCopy._nonTerminals.end());
+  result._nonTerminals = thisCopy->_nonTerminals;
+  result._nonTerminals.insert(result._nonTerminals.end(), otherCopy->_nonTerminals.begin(), otherCopy->_nonTerminals.end());
 
-  result._terminals = thisCopy._terminals;
-  result._terminals.insert(result._terminals.end(), otherCopy._terminals.begin(), otherCopy._terminals.end());
+  result._terminals = thisCopy->_terminals;
+  result._terminals.insert(result._terminals.end(), otherCopy->_terminals.begin(), otherCopy->_terminals.end());
 
-  for (auto &rule : thisCopy._rules) {
+  for (auto &rule : thisCopy->_rules) {
     result.addRule(rule->getLeftValue(), rule->getRightValue()); /* TODO add method with split rule */
   }
-  for (auto &rule : otherCopy._rules) {
+  for (auto &rule : otherCopy->_rules) {
     result.addRule(rule->getLeftValue(), rule->getRightValue()); /* TODO add method with split rule */
   }
 
   sort( result._terminals.begin(), result._terminals.end() );
   result._terminals.erase( unique( result._terminals.begin(), result._terminals.end() ), result._terminals.end() );
 
-  result.addRule("S>", thisCopy._start.getValue());
-  result.addRule("S>", otherCopy._start.getValue());
+  result.addRule("S>", thisCopy->_start.getValue());
+  result.addRule("S>", otherCopy->_start.getValue());
 //  result._rules.push_back(Rule(++result._nextRuleId, "S", result._start.getValue()));
 //  result._rules.push_back(Rule(++result._nextRuleId, "S", otherCopy._start.getValue()));
   result._start = NonTerminal("S");
-  result._nonTerminals.push_back(NonTerminal("S"));
+  result._nonTerminals.emplace_back("S");
+
+  thisCopy->Destroy();
+  otherCopy->Destroy();
 
   return result;
 }
 
 /* Concat */
 Grammar Grammar::operator*(const Grammar &other) {
-  Grammar thisCopy(*this);
-  Grammar otherCopy(other);
+  Grammar *thisCopy = new Grammar(*this);
+  Grammar *otherCopy = new Grammar(other);
+//  Grammar *result = new Grammar();
   Grammar result;
 
-  thisCopy.modify(thisCopy._id);
-  otherCopy.modify(otherCopy._id);
+  thisCopy->modify(thisCopy->_id);
+  otherCopy->modify(otherCopy->_id);
 
-  result._nonTerminals = thisCopy._nonTerminals;
-  result._nonTerminals.insert(result._nonTerminals.end(), otherCopy._nonTerminals.begin(), otherCopy._nonTerminals.end());
+  result._nonTerminals = thisCopy->_nonTerminals;
+  result._nonTerminals.insert(result._nonTerminals.end(), otherCopy->_nonTerminals.begin(), otherCopy->_nonTerminals.end());
 
-  result._terminals = thisCopy._terminals;
-  result._terminals.insert(result._terminals.end(), otherCopy._terminals.begin(), otherCopy._terminals.end());
+  result._terminals = thisCopy->_terminals;
+  result._terminals.insert(result._terminals.end(), otherCopy->_terminals.begin(), otherCopy->_terminals.end());
 
-  for (auto &rule : thisCopy._rules) {
+  for (auto &rule : thisCopy->_rules) {
     result.addRule(rule->getLeftValue(), rule->getRightValue()); /* TODO add method with split rule */
   }
-  for (auto &rule : otherCopy._rules) {
+  for (auto &rule : otherCopy->_rules) {
     result.addRule(rule->getLeftValue(), rule->getRightValue()); /* TODO add method with split rule */
   }
 
   sort( result._terminals.begin(), result._terminals.end() );
   result._terminals.erase( unique( result._terminals.begin(), result._terminals.end() ), result._terminals.end() );
 
-  result.addRule("S>", thisCopy._start.getValue() + otherCopy._start.getValue());
+  result.addRule("S>", thisCopy->_start.getValue() + otherCopy->_start.getValue());
 //  result._rules.push_back(Rule(++result._nextRuleId, "S", result._start.getValue()));
 //  result._rules.push_back(Rule(++result._nextRuleId, "S", otherCopy._start.getValue()));
   result._start = NonTerminal("S");
   result._nonTerminals.push_back(NonTerminal("S"));
+
+  thisCopy->Destroy();
+  otherCopy->Destroy();
 
   return result;
 }
@@ -265,15 +273,14 @@ bool Grammar::chomsky() {
   return true;
 }
 
-Grammar Grammar::iterate() {
-  Grammar result(*this);
-  result.modify(result.get_id());
+void Grammar::iterate() {
+  this->modify(this->get_id());
 
-  result.addRule("S", result._start.getValue() + "S");
-  result._start = NonTerminal("S");
-  result._nonTerminals.push_back(result._start);
+  this->addRule("S", this->_start.getValue() + "S");
+  this->_start = NonTerminal("S");
+  this->_nonTerminals.push_back(this->_start);
 
-  return result;
+//  return result;
 }
 
 std::vector<std::pair<NonTerminal, NonTerminal>> getCombinations(const std::string &left, const std::string &right, std::vector<std::pair<std::string, std::vector<NonTerminal>>> pairs) {
@@ -397,7 +404,7 @@ std::vector<Rule *> Grammar::getRulesFrom(NonTerminal nonTerminal) {
   return result;
 }
 
-Grammar Grammar::chomskify() {
+void Grammar::chomskify() {
 //  Grammar result(*this);
   std::vector<std::pair <Terminal, NonTerminal>> linkedNonTerminals = getReverseImplication();
 
@@ -444,9 +451,6 @@ Grammar Grammar::chomskify() {
     }
   }
   for (auto &toRemove : rulesToRemove) { this->removeRule(toRemove); } /* Removing the nested rules */
-
-
-  return *this;
 }
 
 bool Grammar::ruleExists(NonTerminal left, Terminal right) {

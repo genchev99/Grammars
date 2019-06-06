@@ -42,8 +42,8 @@ public:
   std::vector<std::pair<Terminal, NonTerminal>> getReverseImplication();
 
 
-  Grammar iterate();
-  Grammar chomskify();
+  void iterate();
+  void chomskify();
   bool chomsky();
   bool cyk(std::string word);
 //  bool cyk2(std::string word);

@@ -63,22 +63,27 @@ void GrammarManager::removeRule(long grammar, long rule) {
 }
 
 void GrammarManager::unionGrammars(long left, long right) {
-  Grammar leftGrammar(*getGrammar(left));
-  Grammar rightGrammar(*getGrammar(right));
-//  Grammar unioned = leftGrammar + rightGrammar;
-  _grammars.push_back(new Grammar(leftGrammar + rightGrammar));
+  Grammar *leftGrammar = new Grammar(*getGrammar(left));
+  Grammar *rightGrammar = new Grammar(*getGrammar(right));
+  Grammar *uni = new Grammar(*leftGrammar + *rightGrammar);
+  _grammars.emplace_back(uni);
   (*(_grammars.end() -1))->set_id(++_nextGrammarId); /* Nasty... */
 
   std::cout << "[ * ] New Grammar: " << (*(_grammars.end() -1))->get_id() << std::endl;
+  leftGrammar->Destroy();
+  rightGrammar->Destroy();
 }
 
 void GrammarManager::concatGrammars(long left, long right) {
-  Grammar leftGrammar = *getGrammar(left);
-  Grammar rightGrammar = *getGrammar(right);
-  _grammars.push_back(new Grammar(leftGrammar * rightGrammar));
+  Grammar *leftGrammar = new Grammar(*getGrammar(left));
+  Grammar *rightGrammar = new Grammar(*getGrammar(right));
+
+  _grammars.emplace_back(new Grammar(*leftGrammar * *rightGrammar));
   (*(_grammars.end() -1))->set_id(++_nextGrammarId); /* Nasty... */
 
   std::cout << "[ * ] New Grammar: " << (*(_grammars.end() -1))->get_id() << std::endl;
+  leftGrammar->Destroy();
+  rightGrammar->Destroy();
 }
 
 void GrammarManager::chomsky(long id) {
@@ -87,18 +92,18 @@ void GrammarManager::chomsky(long id) {
 }
 
 void GrammarManager::iteration(long id) {
-  Grammar grammar = getGrammar(id)->iterate();
+  Grammar *copy = new Grammar(*getGrammar(id));
 
-  _grammars.push_back(new Grammar(grammar));
+  _grammars.push_back(copy);
   (*(_grammars.end() -1))->set_id(++_nextGrammarId);
   std::cout << "[ * ] New Grammar: " << (*(_grammars.end() -1))->get_id() << std::endl;
 }
 
 void GrammarManager::chomskify(long id) {
-  Grammar grammar(*getGrammar(id));
-  grammar.chomskify();
+  Grammar *grammar = new Grammar(*getGrammar(id));
+  grammar->chomskify();
 
-  _grammars.push_back(new Grammar(grammar));
+  _grammars.push_back(grammar);
   (*(_grammars.end() -1))->set_id(++_nextGrammarId);
   std::cout << "[ * ] New Grammar: " << (*(_grammars.end() -1))->get_id() << std::endl;
 }
