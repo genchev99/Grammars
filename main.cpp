@@ -57,7 +57,7 @@ int main() {
   grammarManager->chomskify(2);
   grammarManager->print(6);
 
-  grammarManager->cyk(6, "baba");
+  grammarManager->cyk(6, "bba");
 
   grammarManager->Destroy();
 

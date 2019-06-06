@@ -247,8 +247,8 @@ void Grammar::removeRule(long id) {
 }
 
 void Grammar::addRule(std::string left, std::string right) {
-  Rule *rule = new Rule(++_nextRuleId, std::move(left), std::move(right));
-  _rules.push_back(rule);
+//  Rule *rule = new Rule(++_nextRuleId, std::move(left), std::move(right));
+  _rules.emplace_back(new Rule(++_nextRuleId, std::move(left), std::move(right)));
 //  rule->Destroy();
 }
 
@@ -287,7 +287,7 @@ std::vector<std::pair<NonTerminal, NonTerminal>> getCombinations(const std::stri
 
   for (auto &leftNonTerminal : leftNonTerminals) {
     for (auto &rightNonTerminal : rightNonTerminals) {
-      result.push_back(std::make_pair(leftNonTerminal, rightNonTerminal));
+      result.emplace_back(leftNonTerminal, rightNonTerminal);
     }
   }
 
@@ -308,69 +308,15 @@ std::string joinNonTerminals(std::pair<NonTerminal, NonTerminal> combination) {
   return combination.first.getValue() + combination.second.getValue();
 }
 
-bool Grammar::cyk(std::string word) {
-  if (!chomsky() || word.empty()) {
-    std::cerr << "Grammar error" << std::endl;
-    return false;
-  }
 
-  std::vector<std::pair<std::string, std::vector<NonTerminal>>> pairs; /* Where is the hashset ;( */
-  for (unsigned long i = 1; i <= word.size(); ++i) { /* Word length */
-    for (unsigned long k = 0; k < word.size() - i + 1; ++k) { /* Starting position */
-      std::string currentSubString = word.substr(k, i); /* Substring from starting position k and length i */
-      if (currentSubString.size() == 1) {
-        std::vector<NonTerminal> leftNonTerminals = getNonTerminalsFromImplication(currentSubString);
-        if (!isPair(pairs, currentSubString)) pairs.push_back(std::make_pair(currentSubString, leftNonTerminals));
-      } else {
-        for (unsigned long j = 1; j < currentSubString.size(); ++j) { /* Sub parts split */
-          std::string left = currentSubString.substr(0, j);
-          std::string right = currentSubString.substr(j, currentSubString.size() - j);
-          std::vector<std::pair<NonTerminal, NonTerminal>> combinations = getCombinations(left, right, pairs);
-          std::vector<NonTerminal> matches;
-          for (auto &combination : combinations) {
-            std::vector<NonTerminal> currentMatches = getNonTerminalsFromImplication(joinNonTerminals(combination));
-            matches.insert(matches.end(), currentMatches.begin(), currentMatches.end());
-          }
-
-          if (!isPair(pairs, currentSubString)) pairs.push_back(std::make_pair(currentSubString, matches));
-        }
-      }
-      /*for (auto &pair : pairs) {
-        std::cout << pair.first;
-        if (pair.first == word) {
-          for (auto &term : pair.second) {
-            std::cout << term.getValue();
-            if (term.getValue() == _start.getValue()) return true;
-          }
-        }
-      }*/
-
-
-    }
-  }
-
-  for (auto &pair : pairs) {
-    std::cout << "word: " << pair.first;
-    std::cout << word << std::endl;
-    if (pair.first == word) {
-      for (auto &term : pair.second) {
-        std::cout << " value: " << term.getValue();
-        if (term.getValue() == _start.getValue()) return true;
-      }
-    }
-    std::cout << std::endl;
-  }
-
-
-  return false;
-}
 
 std::vector<NonTerminal> Grammar::getNonTerminalsFromImplication(std::string word) {
   std::vector<NonTerminal> nonTerminals;
 
   for (auto &rule : _rules) {
+//    std::cout << "Rule right value: " << rule->getRightValue() << std::endl;
     if (rule->getRightValue() == word) {
-      nonTerminals.push_back(rule->getRightValue());
+      nonTerminals.push_back(rule->getLeft());
     }
   }
 
@@ -527,5 +473,96 @@ void Grammar::Destroy() {
   delete(this);
 }
 
+bool Grammar::cyk(std::string word) {
+  if (!chomsky() || word.empty()) {
+    std::cerr << "Grammar error" << std::endl;
+    return false;
+  }
 
+  std::vector<std::pair<std::string, std::vector<NonTerminal>>> pairs; /* Where is the hashset ;( */
+  for (unsigned long i = 1; i <= word.size(); ++i) { /* Word length */
+    for (unsigned long k = 0; k < word.size() - i + 1; ++k) { /* Starting position */
+      std::string currentSubString = word.substr(k, i); /* Substring from starting position k and length i */
+      if (currentSubString.size() == 1) {
+//        std::cout << "Current substring: " << currentSubString << std::endl;
+        std::vector<NonTerminal> leftNonTerminals = getNonTerminalsFromImplication(currentSubString);
 
+//        std::cout << "Left non-terminals" << std::endl;
+//        for (auto &leftNonTerminal : leftNonTerminals) {
+//          std::cout << leftNonTerminal.getValue() << std::endl;
+//        }
+
+        if (!isPair(pairs, currentSubString)) {
+          pairs.emplace_back(currentSubString, leftNonTerminals);
+        }
+      } else {
+        for (unsigned long j = 1; j < currentSubString.size(); ++j) { /* Sub parts split */
+          std::string left = currentSubString.substr(0, j);
+          std::string right = currentSubString.substr(j, currentSubString.size() - j);
+          std::vector<std::pair<NonTerminal, NonTerminal>> combinations = getCombinations(left, right, pairs);
+          std::vector<NonTerminal> matches;
+          for (auto &combination : combinations) {
+            std::vector<NonTerminal> currentMatches = getNonTerminalsFromImplication(joinNonTerminals(combination));
+            matches.insert(matches.end(), currentMatches.begin(), currentMatches.end());
+          }
+
+          if (!isPair(pairs, currentSubString)) pairs.push_back(std::make_pair(currentSubString, matches));
+        }
+      }
+    }
+  }
+
+  for (auto &pair : pairs) {
+    if (word == pair.first) { /* Checks if the word is equal to the pair key */
+      for (auto &second : pair.second) {
+        if (second.getValue() == _start.getValue()) {
+          return true;
+        }
+      }
+    }
+
+  }
+
+  return false;
+}
+
+/*bool Grammar::cyk2(std::string word) {
+  std::vector<std::pair<std::string, std::vector<NonTerminal>>> pairs;
+  for (unsigned long i = 1; i <= word.size(); ++i) { *//* Word length *//*
+    for (unsigned long k = 0; k < word.size() - i + 1; ++k) { *//* Starting position *//*
+      std::string currentSubString = word.substr(k, i); *//* Substring from starting position k and length i *//*
+//      std::cout << currentSubString << std::endl;
+
+      if (currentSubString.size() == 1) {
+        std::vector<NonTerminal> left = getNonTerminalsFromImplication(currentSubString);
+        if (!isPair(pairs, currentSubString)) {
+          pairs.push_back(std::make_pair(currentSubString, left));
+        }
+      } else {
+        for (unsigned long j = 1; j < currentSubString.size(); ++j) { *//* Sub parts split *//*
+          std::string left = currentSubString.substr(0, j);
+          std::string right = currentSubString.substr(j, currentSubString.size() - j);
+          std::vector<NonTerminal> combinations = getCombinations(left, right, pairs);
+          std::vector<std::string> matches;
+          for (auto &combination : combinations) {
+            std::vector<std::string> currentMatches = CYKLeftString(combination);
+            matches.insert(matches.end(), currentMatches.begin(), currentMatches.end());
+          }
+
+          if (!isPair(currentSubString, pairs)) {
+            pairs.push_back(std::make_pair(currentSubString, matches));
+          }
+        }
+      }
+      for (auto &pair : pairs) {
+        if (pair.first == word) {
+          for (auto &term : pair.second) {
+            if (term == this->start.getValue()) return true;
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}*/

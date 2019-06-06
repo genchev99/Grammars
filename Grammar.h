@@ -46,6 +46,7 @@ public:
   Grammar chomskify();
   bool chomsky();
   bool cyk(std::string word);
+//  bool cyk2(std::string word);
   std::vector<NonTerminal> getNonTerminalsFromImplication(std::string word);
   /* Getters and setters */
   long get_id() const;
