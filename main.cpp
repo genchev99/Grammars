@@ -5,59 +5,97 @@
 #include "Rule.h"
 #include "Grammar.h"
 #include "GrammarManager.h"
+#include "StringManager.h"
+
+bool validate(std::vector<std::string> command) {
+  if (command.empty()) return false; /* Empty check */
+
+  if (command.at(0) != "exit"
+    && command.at(0) != "saveas"
+    && command.at(0) != "close"
+    && command.at(0) != "close"
+    && command.at(0) != "save"
+    && command.at(0) != "help"
+    && command.at(0) != "print"
+    && command.at(0) != "list"
+    && command.at(0) != "union"
+    && command.at(0) != "addRule"
+    && command.at(0) != "removeRule"
+    && command.at(0) != "concat"
+    && command.at(0) != "chomsky"
+    && command.at(0) != "chomskify"
+    && command.at(0) != "iter"
+    && command.at(0) != "cyk"
+    && command.at(0) != "open") {
+    return false;
+  }
+  if (command.size() < 2) {
+    if (command.at(0) == "open"
+      || command.at(0) == "saveas"
+      || command.at(0) == "print"
+      || command.at(0) == "chomskify"
+      || command.at(0) == "chomsky"
+      || command.at(0) == "iter"
+      || command.at(0) == "cyk") {
+      return false;
+    }
+  }
+  if (command.size() < 3) {
+    if (command.at(0) == "concat"
+      || command.at(0) == "removeRule"
+      || command.at(0) == "addRule"
+      || command.at(0) == "union") {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 int main() {
-  /*std::vector<Variable *> variables;
-  variables.push_back(new Terminal("a"));
-  variables.push_back(new Terminal("as"));
-  variables.push_back(new Terminal("asd"));
+  bool exit = false;
+  std::string command;
 
-  for (const auto &variable : variables) {
-    std::cout << variable->getValue() << std::endl;
-  }*/
-  /*Rule rule(1, "S", "aSa");
-  Rule rule2(rule);
-  rule.modify(2);*/
-
-  /*Grammar grammar1(1, "({S, B, B1}; {a, b}; S; {S>b|aBB|B|BB1|BBB, B>baba, B1>a})");
-  Grammar grammar2(2, "({S, A}; {a, b}; S; {S>a|b|AA, A>b})");
-  Grammar grammar3 = grammar1+grammar2;
-  std::vector<Grammar> grammars;
-  grammars.push_back(grammar1);
-  grammars.push_back(grammar2);
-  grammars.push_back(grammar3);
-
-  (grammars.end() -1)->set_id(3);
-
-  for (auto &grammar : grammars) {
-    grammar.print();
-  }*/
   GrammarManager  *grammarManager = new GrammarManager();
-//  grammarManager.open("/home/genchev99/CPP_Projects/Grammars/grams.txt");
-  grammarManager->open("/home/bcp/CLionProjects/Grammars/grams.txt");
-  grammarManager->list();
-  grammarManager->print(1);
-  grammarManager->print(2);
-//  grammarManager->addRule(2, "S>aaaa");
-//  grammarManager->print(2);
-//  grammarManager->removeRule(2, 3);
-//  grammarManager->print(2);
-
-  grammarManager->unionGrammars(1, 2);
-  grammarManager->print(1);
-  grammarManager->print(2);
-  grammarManager->print(3);
-
-  grammarManager->concatGrammars(1, 2);
-  grammarManager->print(4);
-
-  grammarManager->iteration(1);
-  grammarManager->print(5);
-
-  grammarManager->chomskify(2);
-  grammarManager->print(6);
-
-  grammarManager->cyk(6, "baba");
+  grammarManager->open("/home/genchev99/CPP_Projects/Grammars/grams.txt");
+  while (!exit) {
+    std::getline(std::cin, command);
+    std::vector<std::string> splitCommand = StringManager(command).splitBy(' ');
+    bool locked = grammarManager->isLocked();
+    if (!validate(splitCommand)) {
+      std::cout << "[ Err ] Unsupported command - type \"help\" to check all commands!" << std::endl;
+    } else if (splitCommand.at(0) == "exit") {
+      exit = true;
+    } else if (splitCommand.at(0) == "open") {
+      grammarManager->open(splitCommand.at(1));
+    } else if (splitCommand.at(0) == "print" && locked) {
+      grammarManager->print(std::stoi(splitCommand.at(1)));
+    } else if (splitCommand.at(0) == "list" && locked) {
+      grammarManager->list();
+    } else if (splitCommand.at(0) == "union" && locked) {
+      grammarManager->unionGrammars(std::stoi(splitCommand.at(1)), std::stoi(splitCommand.at(2)));
+    } else if (splitCommand.at(0) == "concat" && locked) {
+      grammarManager->concatGrammars(std::stoi(splitCommand.at(1)), std::stoi(splitCommand.at(2)));
+    } else if (splitCommand.at(0) == "addRule" && locked) {
+      grammarManager->addRule(std::stoi(splitCommand.at(1)), splitCommand.at(2));
+    } else if (splitCommand.at(0) == "removeRule" && locked) {
+      grammarManager->removeRule(std::stoi(splitCommand.at(1)), std::stoi(splitCommand.at(2)));
+    } else if (splitCommand.at(0) == "cyk" && locked) {
+      grammarManager->cyk(std::stoi(splitCommand.at(1)), splitCommand.at(2));
+    } else if (splitCommand.at(0) == "chomsky" && locked) {
+      grammarManager->chomsky(std::stoi(splitCommand.at(1)));
+    } else if (splitCommand.at(0) == "chomskify" && locked) {
+      grammarManager->chomskify(std::stoi(splitCommand.at(1)));
+    } else if (splitCommand.at(0) == "iter" && locked) {
+      grammarManager->iteration(std::stoi(splitCommand.at(1)));
+    } else if (splitCommand.at(0) == "help") {
+      grammarManager->help();
+    } else if (splitCommand.at(0) == "close") {
+      grammarManager->close();
+    } else if (splitCommand.at(0) == "saveas") {
+      grammarManager->saveas(splitCommand.at(1));
+    }
+  }
 
   grammarManager->Destroy();
 

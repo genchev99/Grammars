@@ -46,9 +46,9 @@ public:
   void chomskify();
   bool chomsky();
   bool cyk(std::string word);
-//  bool cyk2(std::string word);
   std::vector<NonTerminal> getNonTerminalsFromImplication(std::string word);
   /* Getters and setters */
+  std::string getString();
   long get_id() const;
   void set_id(long _id);
   const std::vector<Terminal> &get_terminals() const;

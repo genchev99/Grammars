@@ -405,8 +405,7 @@ std::vector<Rule *> Grammar::getRulesFrom(NonTerminal nonTerminal) {
 }
 
 void Grammar::chomskify() {
-//  Grammar result(*this);
-  std::vector<std::pair <Terminal, NonTerminal>> linkedNonTerminals = getReverseImplication();
+  std::vector<std::pair<Terminal, NonTerminal>> linkedNonTerminals = getReverseImplication();
 
   /* First step */
   for (auto &rule : _rules) {
@@ -414,7 +413,9 @@ void Grammar::chomskify() {
     for (auto &variable : variables) {
       if (variable->isTerminal() && variables.size() != 1) {
         NonTerminal nonTerminal = getNonTerminalFromReverse(linkedNonTerminals, variable->getValue());
-        if (!ruleExists(nonTerminal, *variable)) this->addRule(nonTerminal.getValue(), variable->getValue());
+        if (!ruleExists(nonTerminal, *variable)) {
+          this->addRule(nonTerminal.getValue(), variable->getValue());
+        }
         variable->setValue(nonTerminal.getValue());
       }
     }
@@ -459,6 +460,7 @@ bool Grammar::ruleExists(NonTerminal left, Terminal right) {
       return true;
     }
   }
+
   return false;
 }
 
@@ -474,6 +476,7 @@ void Grammar::Destroy() {
 //    std::cout << itr << std::endl;
     itr->Destroy();
   }
+
   delete(this);
 }
 
@@ -524,49 +527,38 @@ bool Grammar::cyk(std::string word) {
         }
       }
     }
-
   }
 
   return false;
 }
 
-/*bool Grammar::cyk2(std::string word) {
-  std::vector<std::pair<std::string, std::vector<NonTerminal>>> pairs;
-  for (unsigned long i = 1; i <= word.size(); ++i) { *//* Word length *//*
-    for (unsigned long k = 0; k < word.size() - i + 1; ++k) { *//* Starting position *//*
-      std::string currentSubString = word.substr(k, i); *//* Substring from starting position k and length i *//*
-//      std::cout << currentSubString << std::endl;
-
-      if (currentSubString.size() == 1) {
-        std::vector<NonTerminal> left = getNonTerminalsFromImplication(currentSubString);
-        if (!isPair(pairs, currentSubString)) {
-          pairs.push_back(std::make_pair(currentSubString, left));
-        }
-      } else {
-        for (unsigned long j = 1; j < currentSubString.size(); ++j) { *//* Sub parts split *//*
-          std::string left = currentSubString.substr(0, j);
-          std::string right = currentSubString.substr(j, currentSubString.size() - j);
-          std::vector<NonTerminal> combinations = getCombinations(left, right, pairs);
-          std::vector<std::string> matches;
-          for (auto &combination : combinations) {
-            std::vector<std::string> currentMatches = CYKLeftString(combination);
-            matches.insert(matches.end(), currentMatches.begin(), currentMatches.end());
-          }
-
-          if (!isPair(currentSubString, pairs)) {
-            pairs.push_back(std::make_pair(currentSubString, matches));
-          }
-        }
-      }
-      for (auto &pair : pairs) {
-        if (pair.first == word) {
-          for (auto &term : pair.second) {
-            if (term == this->start.getValue()) return true;
-          }
-        }
-      }
+template <typename T>
+void alterSet(std::string &grammar, std::vector<T> set) {
+  grammar += "{";
+  for (unsigned long i = 0; i < set.size(); ++i) {
+    grammar += set.at(i).getValue();
+    if (i != set.size() -1) {
+      grammar += ", ";
     }
   }
+  grammar += "}";
+}
 
-  return false;
-}*/
+std::string Grammar::getString() {
+  std::string result = "(";
+  alterSet<NonTerminal>(result, _nonTerminals);
+  result += "; ";
+  alterSet<Terminal>(result, _terminals);
+  result += "; ";
+  result += _start.getValue();
+  result += "; {";
+  for (unsigned long i = 0; i < _rules.size(); ++i) {
+    result += _rules.at(i)->getLeftValue() + ">" + _rules.at(i)->getRightValue();
+    if (i != _rules.size() -1) {
+      result += ", ";
+    }
+  }
+  result += "})";
+
+  return result;
+}

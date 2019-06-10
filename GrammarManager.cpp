@@ -8,21 +8,24 @@
 
 GrammarManager::GrammarManager() {
   _nextGrammarId = 0;
+  _lock = false;
 }
 
 void GrammarManager::open(std::string path) {
+  this->close();
   _grammars.clear(); /* Clearing preload grammars */
+  _lock = true;
+  _source = path;
   _nextGrammarId = 0;
   std::string line;
   std::ifstream grammarFile (path);
   if (grammarFile.is_open()) {
-
-    while (getline (grammarFile, line)) {
+    while (getline(grammarFile, line)) {
       _grammars.push_back(new Grammar(++_nextGrammarId, line));
     }
     grammarFile.close();
   } else {
-    std::cerr << "Unable to open file at: " + path  << std::endl;
+    std::cerr << "[ Err ] Unable to open file at: " + path  << std::endl;
     return;
   }
 
@@ -93,6 +96,7 @@ void GrammarManager::chomsky(long id) {
 
 void GrammarManager::iteration(long id) {
   Grammar *copy = new Grammar(*getGrammar(id));
+  copy->iterate();
 
   _grammars.push_back(copy);
   (*(_grammars.end() -1))->set_id(++_nextGrammarId);
@@ -121,4 +125,61 @@ void GrammarManager::cyk(long id, std::string word) {
   bool contains = getGrammar(id)->cyk(word);
 
   std::cout << "The word ~ " << word << " ~ is " << (contains? "": "not") << " containing" << std::endl;
+}
+
+void GrammarManager::help() {
+  std::cout << "[ H ] open <path> - opens grammars's file" << std::endl;
+}
+
+void GrammarManager::close() {
+  for (auto itr : _grammars) {
+    itr->Destroy();
+  }
+
+  _grammars.clear();
+  _lock = false;
+}
+
+bool GrammarManager::isLocked() {
+  return _lock;
+}
+
+void GrammarManager::saveas(std::string path) {
+  std::ofstream newFile(path, std::ios_base::app);
+  if(newFile.is_open()) {
+    for (auto &grammar : _grammars) {
+      newFile << grammar->getString() << "\n";
+    }
+  }
+  else {
+    std::cerr << "[ Err ] Unable to handle the file";
+  }
+
+  newFile.close();
+}
+
+void GrammarManager::save() {
+  std::ofstream newFile(_source, std::ios_base::app);
+  if(newFile.is_open()) {
+    for (auto &grammar : _grammars) {
+      newFile << grammar->getString() << "\n";
+    }
+  }
+  else {
+    std::cerr << "[ Err ] Unable to handle the file";
+  }
+
+  newFile.close();
+}
+
+void GrammarManager::save(long id, std::string path) {
+  std::ofstream newFile(path, std::ios_base::app);
+  if(newFile.is_open()) {
+    newFile << getGrammar(id)->getString() << "\n";
+  }
+  else {
+    std::cerr << "[ Err ] Unable to handle the file";
+  }
+
+  newFile.close();
 }
