@@ -94,6 +94,12 @@ int main() {
       grammarManager->close();
     } else if (splitCommand.at(0) == "saveas") {
       grammarManager->saveas(splitCommand.at(1));
+    } else if (splitCommand.at(0) == "save") {
+      if (splitCommand.size() <= 2) {
+        grammarManager->save();
+      } else {
+        grammarManager->save(std::stoi(splitCommand.at(1)), splitCommand.at(2));
+      }
     }
   }
 
