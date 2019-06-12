@@ -57,7 +57,7 @@ int main() {
   std::string command;
 
   GrammarManager  *grammarManager = new GrammarManager();
-  grammarManager->open("/home/genchev99/CPP_Projects/Grammars/grams.txt");
+//  grammarManager->open("/home/genchev99/CPP_Projects/Grammars/grams.txt");
   while (!exit) {
     std::getline(std::cin, command);
     std::vector<std::string> splitCommand = StringManager(command).splitBy(' ');

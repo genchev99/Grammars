@@ -91,7 +91,7 @@ void GrammarManager::concatGrammars(long left, long right) {
 
 void GrammarManager::chomsky(long id) {
   bool chomsky = getGrammar(id)->chomsky();
-  std::cout << "[ * ] The grammar is " << (chomsky? "": "not") << "in chomsky form!";
+  std::cout << "[ * ] The grammar is " << (chomsky? "": "not") << "in chomsky form!" << std::endl;
 }
 
 void GrammarManager::iteration(long id) {
