@@ -150,8 +150,7 @@ void GrammarManager::saveas(std::string path) {
     for (auto &grammar : _grammars) {
       newFile << grammar->getString() << "\n";
     }
-  }
-  else {
+  } else {
     std::cerr << "[ Err ] Unable to handle the file";
   }
 
@@ -159,13 +158,12 @@ void GrammarManager::saveas(std::string path) {
 }
 
 void GrammarManager::save() {
-  std::ofstream newFile(_source, std::ios_base::app);
+  std::ofstream newFile(_source);
   if(newFile.is_open()) {
     for (auto &grammar : _grammars) {
       newFile << grammar->getString() << "\n";
     }
-  }
-  else {
+  } else {
     std::cerr << "[ Err ] Unable to handle the file";
   }
 
@@ -176,8 +174,7 @@ void GrammarManager::save(long id, std::string path) {
   std::ofstream newFile(path, std::ios_base::app);
   if(newFile.is_open()) {
     newFile << getGrammar(id)->getString() << "\n";
-  }
-  else {
+  } else {
     std::cerr << "[ Err ] Unable to handle the file";
   }
 

@@ -1,2 +1,3 @@
-({S, A}; {a, b}; S; {S>a|b|AA, A>b})
-({S, B, B1}; {a, b}; S; {S>b|aBB|B|BB1|BBB, B>baba, B1>a})
+({S, A}; {a, b}; S; {S>a, S>b, S>AA, A>b})
+({S, B, B1}; {a, b}; S; {S>b, S>aBB, S>B, S>BB1, S>BBB, B>baba, B1>a})
+({S1, A1, S2, B2, B12, S}; {a, b}; S; {S1>a, S1>b, S1>A1A1, A1>b, S2>b, S2>aB2B2, S2>B2, S2>B2B12, S2>B2B2B2, B2>baba, B12>a, S>S1, S>S2})

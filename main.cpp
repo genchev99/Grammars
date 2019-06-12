@@ -90,11 +90,11 @@ int main() {
       grammarManager->iteration(std::stoi(splitCommand.at(1)));
     } else if (splitCommand.at(0) == "help") {
       grammarManager->help();
-    } else if (splitCommand.at(0) == "close") {
+    } else if (splitCommand.at(0) == "close" && locked) {
       grammarManager->close();
-    } else if (splitCommand.at(0) == "saveas") {
+    } else if (splitCommand.at(0) == "saveas" && locked) {
       grammarManager->saveas(splitCommand.at(1));
-    } else if (splitCommand.at(0) == "save") {
+    } else if (splitCommand.at(0) == "save" && locked) {
       if (splitCommand.size() <= 2) {
         grammarManager->save();
       } else {
